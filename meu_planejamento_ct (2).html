@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Meu Planejamento">
+<meta name="theme-color" content="#185FA5">
+<title>Meu Planejamento — CT</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #F5F5F7; color: #1C1C1E; min-height: 100vh; }
+  .app { max-width: 430px; margin: 0 auto; padding-bottom: 80px; }
+
+  /* HEADER */
+  .header { background: #185FA5; color: white; padding: 20px 16px 16px; text-align: center; }
+  .header h1 { font-size: 20px; font-weight: 600; }
+  .header p { font-size: 13px; opacity: 0.8; margin-top: 4px; }
+
+  /* TABS */
+  .tab-bar { display: flex; background: white; border-bottom: 1px solid #E5E5EA; position: sticky; top: 0; z-index: 10; }
+  .tab { flex: 1; padding: 12px 4px 10px; text-align: center; font-size: 11px; font-weight: 500; color: #8E8E93; border: none; background: transparent; cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.15s; }
+  .tab.active { color: #185FA5; border-bottom-color: #185FA5; }
+  .tab span { display: block; font-size: 18px; margin-bottom: 2px; }
+
+  /* CONTENT */
+  .content { padding: 16px; }
+  .section { display: none; }
+  .section.active { display: block; }
+
+  /* CARDS */
+  .card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .card-title { font-size: 15px; font-weight: 600; color: #1C1C1E; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+  .card-title span { font-size: 18px; }
+
+  /* METRIC GRID */
+  .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
+  .metric { background: white; border-radius: 12px; padding: 14px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .metric-label { font-size: 11px; color: #8E8E93; text-transform: uppercase; letter-spacing: 0.04em; margin-bottom: 6px; }
+  .metric-value { font-size: 22px; font-weight: 600; }
+  .green { color: #34C759; }
+  .blue { color: #185FA5; }
+  .red { color: #FF3B30; }
+  .orange { color: #FF9500; }
+
+  /* ROWS */
+  .row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F2F2F7; }
+  .row:last-child { border-bottom: none; }
+  .row-label { font-size: 14px; color: #3C3C43; }
+  .row-value { font-size: 14px; font-weight: 600; }
+
+  /* EXPENSE ROWS */
+  .exp-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid #F2F2F7; }
+  .exp-row:last-child { border-bottom: none; }
+  .exp-label { font-size: 14px; color: #3C3C43; flex: 1; }
+  .exp-input { width: 90px; border: 1px solid #D1D1D6; border-radius: 8px; padding: 6px 10px; font-size: 14px; text-align: right; background: #F2F2F7; color: #1C1C1E; }
+  .exp-input:focus { outline: none; border-color: #185FA5; background: white; }
+
+  /* CONFIG INPUTS */
+  .cfg-input { width: 80px; border: 1px solid #D1D1D6; border-radius: 8px; padding: 6px 10px; font-size: 14px; text-align: right; background: #F2F2F7; color: #1C1C1E; }
+  .cfg-input:focus { outline: none; border-color: #185FA5; background: white; }
+
+  /* SURPLUS */
+  .surplus-box { border-radius: 12px; padding: 20px; text-align: center; margin-bottom: 12px; }
+  .surplus-box.positive { background: #E8F9EE; }
+  .surplus-box.negative { background: #FFF0EE; }
+  .surplus-amount { font-size: 32px; font-weight: 700; }
+  .surplus-box.positive .surplus-amount { color: #1C8C3A; }
+  .surplus-box.negative .surplus-amount { color: #C0392B; }
+  .surplus-desc { font-size: 13px; margin-top: 4px; }
+  .surplus-box.positive .surplus-desc { color: #34C759; }
+  .surplus-box.negative .surplus-desc { color: #FF3B30; }
+
+  /* PROGRESS */
+  .prog-wrap { margin-top: 8px; }
+  .prog-info { display: flex; justify-content: space-between; font-size: 12px; color: #8E8E93; margin-bottom: 6px; }
+  .prog-bar { background: #F2F2F7; border-radius: 4px; height: 8px; overflow: hidden; }
+  .prog-fill { height: 100%; border-radius: 4px; transition: width 0.4s; }
+
+  /* CITY BUTTONS */
+  .city-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  .city-btn { padding: 12px 8px; border-radius: 10px; font-size: 13px; font-weight: 500; cursor: pointer; border: 1.5px solid #D1D1D6; background: #F2F2F7; color: #3C3C43; text-align: center; transition: all 0.15s; }
+  .city-btn.selected { border-color: #185FA5; background: #EBF4FF; color: #185FA5; }
+
+  /* BUTTONS */
+  .btn-primary { width: 100%; background: #185FA5; color: white; border: none; border-radius: 12px; padding: 14px; font-size: 16px; font-weight: 600; cursor: pointer; transition: opacity 0.15s; }
+  .btn-primary:active { opacity: 0.8; }
+  .btn-primary:disabled { opacity: 0.5; }
+
+  /* AI */
+  .ai-input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .ai-input { flex: 1; border: 1px solid #D1D1D6; border-radius: 10px; padding: 10px 14px; font-size: 14px; background: #F2F2F7; color: #1C1C1E; }
+  .ai-input:focus { outline: none; border-color: #185FA5; background: white; }
+  .ai-send { background: #185FA5; color: white; border: none; border-radius: 10px; padding: 10px 16px; font-size: 20px; cursor: pointer; }
+  .quick-btns { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 14px; }
+  .quick-btn { background: #EBF4FF; color: #185FA5; border: none; border-radius: 20px; padding: 7px 13px; font-size: 12px; font-weight: 500; cursor: pointer; }
+  .ai-bubble { background: #F2F2F7; border-radius: 12px; padding: 14px; font-size: 14px; line-height: 1.6; color: #1C1C1E; white-space: pre-wrap; }
+  .ai-loading { color: #8E8E93; font-style: italic; }
+
+  /* LINKS */
+  .link-row { display: flex; gap: 10px; margin-top: 12px; }
+  .ext-link { flex: 1; background: #EBF4FF; color: #185FA5; border-radius: 10px; padding: 10px; text-align: center; font-size: 13px; font-weight: 600; text-decoration: none; }
+
+  /* RESULTS */
+  .result-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+  .result-card h4 { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+
+  /* DIVIDER */
+  .divider { height: 1px; background: #F2F2F7; margin: 12px 0; }
+
+  /* INSTALL BANNER */
+  .install-banner { background: #185FA5; color: white; padding: 12px 16px; font-size: 13px; display: flex; align-items: center; gap: 10px; }
+  .install-banner button { background: white; color: #185FA5; border: none; border-radius: 6px; padding: 6px 12px; font-size: 12px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>💰 Meu Planejamento</h1>
+    <p>West Hartford, CT · 1 pessoa</p>
+  </div>
+
+  <div class="tab-bar">
+    <button class="tab active" onclick="showTab('income', this)"><span>💵</span>Renda</button>
+    <button class="tab" onclick="showTab('expenses', this)"><span>📋</span>Gastos</button>
+    <button class="tab" onclick="showTab('housing', this)"><span>🏠</span>Casas</button>
+    <button class="tab" onclick="showTab('ai', this)"><span>🤖</span>IA</button>
+  </div>
+
+  <div class="content">
+
+    <!-- RENDA -->
+    <div class="section active" id="tab-income">
+      <div class="metric-grid">
+        <div class="metric">
+          <div class="metric-label">Salário / hora</div>
+          <div class="metric-value blue" id="m-hourly">$16</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Horas / dia</div>
+          <div class="metric-value" id="m-hours">10h</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Por pagamento (liq.)</div>
+          <div class="metric-value green" id="m-paycheck">—</div>
+        </div>
+        <div class="metric">
+          <div class="metric-label">Renda mensal (liq.)</div>
+          <div class="metric-value green" id="m-monthly">—</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>⚙️</span> Configurar</div>
+        <div class="row">
+          <span class="row-label">Valor por hora ($)</span>
+          <input type="number" class="cfg-input" id="hourly" value="16" step="0.5" oninput="calc()">
+        </div>
+        <div class="row">
+          <span class="row-label">Horas por dia</span>
+          <input type="number" class="cfg-input" id="hours" value="10" oninput="calc()">
+        </div>
+        <div class="row">
+          <span class="row-label">Dias por semana</span>
+          <input type="number" class="cfg-input" id="days" value="6" min="1" max="7" oninput="calc()">
+        </div>
+        <div class="row">
+          <span class="row-label">Pagamentos por mês</span>
+          <input type="number" class="cfg-input" id="pays" value="2" min="1" max="4" oninput="calc()">
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📅</span> Detalhes</div>
+        <div class="row"><span class="row-label">Horas por período</span><span class="row-value" id="d-hours">—</span></div>
+        <div class="row"><span class="row-label">Salário bruto / pgto</span><span class="row-value" id="d-gross">—</span></div>
+        <div class="row"><span class="row-label">Impostos estimados (~25%)</span><span class="row-value red" id="d-tax">—</span></div>
+        <div class="row"><span class="row-label">Salário líquido / pgto</span><span class="row-value green" id="d-net">—</span></div>
+        <div class="row"><span class="row-label">Renda líquida mensal</span><span class="row-value green" style="font-size:17px;" id="d-monthly">—</span></div>
+      </div>
+    </div>
+
+    <!-- GASTOS -->
+    <div class="section" id="tab-expenses">
+      <div class="card">
+        <div class="card-title"><span>🏠</span> Moradia</div>
+        <div class="exp-row"><span class="exp-label">Aluguel</span><input type="number" class="exp-input" id="e-rent" value="1200" oninput="calcExp()"></div>
+        <div class="exp-row"><span class="exp-label">Água</span><input type="number" class="exp-input" id="e-water" value="50" oninput="calcExp()"></div>
+        <div class="exp-row"><span class="exp-label">Luz / energia</span><input type="number" class="exp-input" id="e-elec" value="80" oninput="calcExp()"></div>
+        <div class="exp-row"><span class="exp-label">Internet</span><input type="number" class="exp-input" id="e-net" value="60" oninput="calcExp()"></div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>🛒</span> Pessoal</div>
+        <div class="exp-row"><span class="exp-label">Comida / mês</span><input type="number" class="exp-input" id="e-food" value="350" oninput="calcExp()"></div>
+        <div class="exp-row"><span class="exp-label">Telefone</span><input type="number" class="exp-input" id="e-phone" value="60" oninput="calcExp()"></div>
+        <div class="exp-row"><span class="exp-label">Transporte</span><input type="number" class="exp-input" id="e-transport" value="100" oninput="calcExp()"></div>
+        <div class="exp-row"><span class="exp-label">Outros</span><input type="number" class="exp-input" id="e-other" value="100" oninput="calcExp()"></div>
+      </div>
+
+      <div id="surplus-area"></div>
+
+      <div class="card">
+        <div class="card-title"><span>📊</span> Resumo</div>
+        <div class="row"><span class="row-label">Renda líquida</span><span class="row-value green" id="s-income">—</span></div>
+        <div class="row"><span class="row-label">Total despesas</span><span class="row-value red" id="s-total">—</span></div>
+        <div class="divider"></div>
+        <div class="prog-wrap">
+          <div class="prog-info"><span>% comprometida</span><span id="s-pct">—</span></div>
+          <div class="prog-bar"><div class="prog-fill" id="s-bar" style="width:0%;background:#34C759;"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CASAS -->
+    <div class="section" id="tab-housing">
+      <div class="card">
+        <div class="card-title"><span>📍</span> Escolha a cidade</div>
+        <div class="city-grid">
+          <div class="city-btn selected" onclick="selectCity(this,'West Hartford')">West Hartford</div>
+          <div class="city-btn" onclick="selectCity(this,'Hartford')">Hartford</div>
+          <div class="city-btn" onclick="selectCity(this,'New Britain')">New Britain</div>
+          <div class="city-btn" onclick="selectCity(this,'Bristol')">Bristol</div>
+          <div class="city-btn" onclick="selectCity(this,'Newington')">Newington</div>
+          <div class="city-btn" onclick="selectCity(this,'Manchester')">Manchester</div>
+        </div>
+        <button class="btn-primary" id="search-btn" onclick="searchHousing()">🔍 Buscar casas com IA</button>
+      </div>
+      <div id="housing-results"></div>
+    </div>
+
+    <!-- IA -->
+    <div class="section" id="tab-ai">
+      <div class="card">
+        <div class="card-title"><span>🤖</span> Assistente financeiro</div>
+        <div class="ai-input-row">
+          <input type="text" class="ai-input" id="ai-q" placeholder="Pergunte algo..." onkeypress="if(event.key==='Enter')askAI()">
+          <button class="ai-send" onclick="askAI()">➤</button>
+        </div>
+        <div class="quick-btns">
+          <button class="quick-btn" onclick="quickQ('Quanto consigo guardar por mês?')">💰 Guardar dinheiro?</button>
+          <button class="quick-btn" onclick="quickQ('Qual cidade é mais barata pra morar em CT?')">🏙️ Cidade mais barata?</button>
+          <button class="quick-btn" onclick="quickQ('Devo reduzir alguma despesa?')">✂️ Reduzir gastos?</button>
+          <button class="quick-btn" onclick="quickQ('Como planejar minha mudança?')">📦 Planejar mudança?</button>
+          <button class="quick-btn" onclick="quickQ('Quanto devo guardar de emergência?')">🛡️ Reserva emergência?</button>
+        </div>
+        <div class="ai-bubble ai-loading" id="ai-resp" style="display:none;">Analisando seu planejamento...</div>
+      </div>
+
+      <div class="card">
+        <div class="card-title"><span>📈</span> Resumo atual</div>
+        <div id="ai-summary" style="font-size:14px; line-height:1.7; color:#3C3C43;">Calculando...</div>
+      </div>
+
+      <div class="card" style="background:#EBF4FF; border:1.5px solid #B8D4F0;">
+        <div class="card-title" style="color:#185FA5;"><span>📱</span> Adicionar à tela inicial</div>
+        <p style="font-size:13px; color:#3C3C43; line-height:1.6; margin-bottom:10px;">
+          <strong>iPhone/Safari:</strong> Toque em 📤 → "Adicionar à Tela de Início"<br>
+          <strong>Android/Chrome:</strong> Menu ⋮ → "Adicionar à tela inicial"
+        </p>
+        <p style="font-size:12px; color:#8E8E93;">Vira um ícone como um app de verdade!</p>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const API_KEY = ""; // deixe vazio — a IA usa a API do Claude diretamente
+
+let state = { netMonthly: 0, totalExp: 0, surplus: 0, city: 'West Hartford' };
+
+function fmt(n) { return '$' + Math.round(n).toLocaleString('en-US'); }
+
+function calc() {
+  const h = parseFloat(document.getElementById('hourly').value) || 16;
+  const hpd = parseFloat(document.getElementById('hours').value) || 10;
+  const dpw = parseFloat(document.getElementById('days').value) || 6;
+  const pays = parseFloat(document.getElementById('pays').value) || 2;
+
+  const daysPerPeriod = (dpw / 7) * (30 / pays);
+  const hoursPerPeriod = hpd * daysPerPeriod;
+  const gross = h * hoursPerPeriod;
+  const tax = gross * 0.25;
+  const net = gross - tax;
+  const monthlyNet = net * pays;
+
+  state.netMonthly = monthlyNet;
+
+  document.getElementById('m-hourly').textContent = '$' + h.toFixed(2);
+  document.getElementById('m-hours').textContent = hpd + 'h';
+  document.getElementById('m-paycheck').textContent = fmt(net);
+  document.getElementById('m-monthly').textContent = fmt(monthlyNet);
+  document.getElementById('d-hours').textContent = Math.round(hoursPerPeriod) + 'h';
+  document.getElementById('d-gross').textContent = fmt(gross);
+  document.getElementById('d-tax').textContent = '-' + fmt(tax);
+  document.getElementById('d-net').textContent = fmt(net);
+  document.getElementById('d-monthly').textContent = fmt(monthlyNet);
+
+  calcExp();
+  updateSummary();
+}
+
+function calcExp() {
+  const vals = ['rent','water','elec','net','food','phone','transport','other'];
+  let total = 0;
+  vals.forEach(v => { total += parseFloat(document.getElementById('e-' + v).value) || 0; });
+  state.totalExp = total;
+  state.surplus = state.netMonthly - total;
+  const pct = state.netMonthly > 0 ? Math.round((total / state.netMonthly) * 100) : 0;
+
+  document.getElementById('s-income').textContent = fmt(state.netMonthly);
+  document.getElementById('s-total').textContent = fmt(total);
+  document.getElementById('s-pct').textContent = pct + '%';
+  const bar = document.getElementById('s-bar');
+  bar.style.width = Math.min(pct, 100) + '%';
+  bar.style.background = pct > 90 ? '#FF3B30' : pct > 70 ? '#FF9500' : '#34C759';
+
+  const area = document.getElementById('surplus-area');
+  if (state.surplus >= 0) {
+    area.innerHTML = `<div class="surplus-box positive"><div class="surplus-amount">${fmt(state.surplus)}</div><div class="surplus-desc">sobra por mês 🎉</div></div>`;
+  } else {
+    area.innerHTML = `<div class="surplus-box negative"><div class="surplus-amount">${fmt(Math.abs(state.surplus))}</div><div class="surplus-desc">faltam por mês — ajuste os gastos</div></div>`;
+  }
+  updateSummary();
+}
+
+function updateSummary() {
+  const el = document.getElementById('ai-summary');
+  if (!el) return;
+  const pct = state.netMonthly > 0 ? Math.round((state.totalExp / state.netMonthly) * 100) : 0;
+  el.innerHTML = `
+    <div class="row"><span class="row-label">Renda líquida mensal</span><span class="row-value green">${fmt(state.netMonthly)}</span></div>
+    <div class="row"><span class="row-label">Total de despesas</span><span class="row-value red">${fmt(state.totalExp)}</span></div>
+    <div class="row"><span class="row-label">Saldo mensal</span><span class="row-value ${state.surplus >= 0 ? 'green' : 'red'}">${fmt(state.surplus)}</span></div>
+    <div class="row"><span class="row-label">% da renda comprometida</span><span class="row-value">${pct}%</span></div>
+    <div class="row"><span class="row-label">Cidade de interesse</span><span class="row-value blue">${state.city}, CT</span></div>
+  `;
+}
+
+function showTab(name, el) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+}
+
+function selectCity(el, city) {
+  document.querySelectorAll('.city-btn').forEach(b => b.classList.remove('selected'));
+  el.classList.add('selected');
+  state.city = city;
+}
+
+async function searchHousing() {
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Buscando...';
+  const resultsEl = document.getElementById('housing-results');
+  resultsEl.innerHTML = `<div class="card"><div class="ai-bubble ai-loading">Buscando aluguéis em ${state.city}, CT...</div></div>`;
+
+  const prompt = `Você é um assistente de busca de imóveis em Connecticut, EUA.
+A pessoa mora sozinha, busca alugar em ${state.city}, CT.
+Renda líquida mensal: ${fmt(state.netMonthly)}.
+Regra dos 30%: aluguel ideal até ${fmt(state.netMonthly * 0.3)}.
+
+Mostre 3 opções realistas de aluguel para ${state.city} em 2024-2025:
+Para cada uma: emoji + tipo (Studio/1BR/2BR), faixa de preço, bairro/área, e classificação (✅ Compatível / ⚠️ Apertado / ❌ Acima do ideal).
+Ao final: recomendação de qual tipo faz mais sentido e link de busca no Zillow para ${state.city} CT.
+Responda em português, de forma clara e prática para celular.`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 900,
+        messages: [{ role: "user", content: prompt }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.map(i => i.text || "").join("\n");
+    const city_slug = state.city.toLowerCase().replace(/ /g, '-');
+    resultsEl.innerHTML = `
+      <div class="card">
+        <div class="card-title"><span>🏘️</span> Opções em ${state.city}</div>
+        <div style="font-size:14px; line-height:1.7; white-space:pre-wrap;">${text}</div>
+        <div class="link-row">
+          <a class="ext-link" href="https://www.zillow.com/ct/${city_slug}/rentals/" target="_blank">🔎 Zillow</a>
+          <a class="ext-link" href="https://www.apartments.com/${city_slug}-ct/" target="_blank">🏠 Apartments.com</a>
+        </div>
+      </div>`;
+  } catch(e) {
+    resultsEl.innerHTML = `<div class="card"><p style="color:#FF3B30; font-size:14px;">Erro ao buscar. Verifique sua internet e tente novamente.</p></div>`;
+  }
+  btn.disabled = false;
+  btn.textContent = '🔍 Buscar casas com IA';
+}
+
+function quickQ(q) {
+  document.getElementById('ai-q').value = q;
+  askAI();
+}
+
+async function askAI() {
+  const q = document.getElementById('ai-q').value.trim();
+  if (!q) return;
+  const el = document.getElementById('ai-resp');
+  el.style.display = 'block';
+  el.className = 'ai-bubble ai-loading';
+  el.textContent = '🤖 Analisando seu planejamento...';
+
+  const ctx = `Dados do usuário:
+- Renda líquida mensal: ${fmt(state.netMonthly)}
+- Total de despesas: ${fmt(state.totalExp)}
+- Saldo mensal: ${fmt(state.surplus)}
+- Aluguel atual: $${document.getElementById('e-rent').value}
+- Cidade de interesse: ${state.city}, CT
+- Mora sozinho(a), 1 pessoa
+- Trabalha 10h/dia, 6 dias/semana, $16/hora, recebe 2x/mês`;
+
+  try {
+    const resp = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-6",
+        max_tokens: 900,
+        messages: [{ role: "user", content: `${ctx}\n\nPergunta: ${q}\n\nResponda em português de forma prática, direta e motivadora, como um amigo consultor financeiro. Use os dados reais acima.` }]
+      })
+    });
+    const data = await resp.json();
+    const text = data.content.map(i => i.text || "").join("\n");
+    el.className = 'ai-bubble';
+    el.textContent = text;
+  } catch(e) {
+    el.className = 'ai-bubble';
+    el.textContent = '❌ Erro ao conectar. Verifique sua internet.';
+  }
+}
+
+calc();
+</script>
+</body>
+</html>
